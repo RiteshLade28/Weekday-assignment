@@ -8,7 +8,7 @@ import Image from "next/image";
 import HourglassTopIcon from "@mui/icons-material/HourglassTop";
 import { Button } from "@mui/material";
 
-export default function JobCard() {
+export default function JobCard({ job }) {
   return (
     <Box className="jobCard">
       <Box className="cardHeader">
@@ -20,12 +20,7 @@ export default function JobCard() {
         </Box>
         <Box className="cardInfo">
           <Box className="cardLogo">
-            <Image
-              src="/fampayLogo.jpg"
-              alt="FamPay Logo"
-              width={50}
-              height={50}
-            />
+            <img src={job.logoUrl} alt="Company Logo" width={50} height={50} />
           </Box>
           <Box className="cardDetails">
             <Typography
@@ -34,20 +29,25 @@ export default function JobCard() {
               variant="subtitle1"
               component="div"
             >
-              fampay
+              {job.companyName}
             </Typography>
-            <Typography variant="h6" component="div">
-              Backend Engineer
+            <Typography
+              variant="h6"
+              component="div"
+              style={{ textTransform: "capitalize" }}
+            >
+              {job.jobRole}
             </Typography>
             <Typography
               style={{
                 fontWeight: "bold",
                 color: "#504e4e",
+                textTransform: "capitalize",
               }}
               variant="body2"
               component="div"
             >
-              Location
+              {job.location ? job.location : "Not mentioned"}
             </Typography>
           </Box>
         </Box>
@@ -59,7 +59,15 @@ export default function JobCard() {
             variant="subtitle1"
             component="div"
           >
-            Estimated Salary: ₹18 - 35 LPA ✅
+            Estimated Salary:{" "}
+            {job.minJdSalary || job.maxJdSalary ? (
+              <>
+                ₹{job.minJdSalary} {job.minJdSalary ? "- " : ""}
+                {job.maxJdSalary} LPA ✅
+              </>
+            ) : (
+              <>Not mentioned</>
+            )}
           </Typography>
           <Typography
             style={{ fontWeight: "550", color: "#504e4d" }}
@@ -76,17 +84,7 @@ export default function JobCard() {
             >
               About Us
             </Typography>
-            FamPay is building India’s first neo-bank exclusively teens. FamPay
-            helps teens make their own online and offline payments through UPI,
-            FamPay App and FamCard. Our aim is to make banking cool for teens
-            and to help them learn the value of money, savings and spending
-            wisely. We are on a mission to raise a new, financially aware
-            generation, and drive 250 Million+ Indian teenagers to kickstart
-            their financial journey super early in their life. Founded in 2019
-            by IIT Roorkee alumni, FamPay is backed by some of the most
-            respected investors around the world like Elevation Capital,
-            Y-Combinator, Sequoia Capital India, Venture Highway, Global
-            Founder’s Capital and the likes of Kunal Shah, Amrish Rao as angels.
+            {job.jobDetailsFromCompany}
           </Typography>
         </Box>
         <Box
@@ -125,7 +123,7 @@ export default function JobCard() {
           Minimum Experience
         </Typography>
         <Typography variant="body1" component="div">
-          2 year
+          {job.minExp ? job.minExp + " years" : "Not mentioned"}
         </Typography>
         <Box className="cardFooter">
           <Button

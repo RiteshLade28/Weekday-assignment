@@ -1,11 +1,13 @@
 "use client";
 
 import "./globals.css";
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "./page.scss";
 import TextField from "@mui/material/TextField";
 import MultipleSelect from "@/components/MultiSelectDropDown/MultiSelectDropDown";
 import JobCard from "@/components/JobCard/JobCard";
+import axios from "axios";
+import Box from "@mui/material/Box";
 
 const roles = [
   "Frontend Developer",
@@ -47,9 +49,68 @@ const minBasePaySalary = [
 ];
 
 export default function Home() {
-  const [selectedRoles, setSelectedRoles] = React.useState([]);
-  const [selectedNumberOfEmployees, setSelectedNumberOfEmployees] =
-    React.useState([]);
+  const [selectedRoles, setSelectedRoles] = useState([]);
+  const [selectedNumberOfEmployees, setSelectedNumberOfEmployees] = useState(
+    []
+  );
+  const [jobs, setJobs] = useState([]);
+  const [offset, setOffset] = useState(0);
+  const [fetching, setFetching] = useState(false);
+
+  const fetchJobs = useCallback(() => {
+    setFetching(true);
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    const body = JSON.stringify({
+      limit: 10,
+      offset: offset,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body,
+    };
+
+    axios
+      .post(
+        "https://api.weekday.technology/adhoc/getSampleJdJSON",
+        requestOptions
+      )
+      .then((response) => {
+        console.log(response);
+        setJobs((prevJobs) => [...prevJobs, ...response.data.jdList]);
+        setOffset((prevOffset) => prevOffset + 10);
+        setFetching(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching jobs:", error);
+        setFetching(false);
+      });
+  }, [offset]);
+
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
+
+  useEffect(() => {
+    function handleScroll() {
+      if (
+        window.innerHeight + document.documentElement.scrollTop ===
+        document.documentElement.offsetHeight
+      ) {
+        if (!fetching) {
+          fetchJobs();
+        }
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [fetchJobs, fetching]);
+
   return (
     <div className="container">
       <div className="filterContainer">
@@ -98,9 +159,11 @@ export default function Home() {
           />
         </div>
       </div>
-      <div className="jobCards">
-        <JobCard />
-      </div>
+      <Box className="jobCards">
+        {jobs.map((job) => (
+          <JobCard key={job.jdUid} job={job} />
+        ))}
+      </Box>
     </div>
   );
 }
