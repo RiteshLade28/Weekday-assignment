@@ -10,16 +10,16 @@ import axios from "axios";
 import Box from "@mui/material/Box";
 
 const roles = [
-  "Frontend Developer",
-  "Backend Developer",
-  "Full Stack Developer",
-  "DevOps Engineer",
-  "Data Scientist",
-  "Machine Learning Engineer",
-  "Software Engineer",
-  "System Engineer",
-  "Network Engineer",
-  "Security Engineer",
+  "Frontend",
+  "Backend",
+  "Full Stack",
+  "IOS",
+  "Flutter",
+  "React Native",
+  "Android",
+  "Data Science",
+  "Machine Learning",
+  "Dev-ops",
 ];
 
 const numberOfEmployees = [
@@ -53,9 +53,15 @@ export default function Home() {
   const [selectedNumberOfEmployees, setSelectedNumberOfEmployees] = useState(
     []
   );
+  const [selectedExperience, setSelectedExperience] = useState([]);
+  const [selectedJobType, setSelectedJobType] = useState([]);
+  const [selectedMinBasePaySalary, setSelectedMinBasePaySalary] = useState([]);
+  const [selectedCompanyName, setSelectedCompanyName] = useState("");
+
   const [jobs, setJobs] = useState([]);
   const [offset, setOffset] = useState(0);
   const [fetching, setFetching] = useState(false);
+  const [filter, setFilter] = useState({});
 
   const fetchJobs = useCallback(() => {
     setFetching(true);
@@ -80,14 +86,14 @@ export default function Home() {
       .then((response) => {
         console.log(response);
         setJobs((prevJobs) => [...prevJobs, ...response.data.jdList]);
-        setOffset((prevOffset) => prevOffset + 10);
+        setOffset((offset) => offset + 10);
         setFetching(false);
       })
       .catch((error) => {
         console.error("Error fetching jobs:", error);
         setFetching(false);
       });
-  }, [offset]);
+  }, []);
 
   useEffect(() => {
     fetchJobs();
@@ -95,11 +101,11 @@ export default function Home() {
 
   useEffect(() => {
     function handleScroll() {
-      if (
-        window.innerHeight + document.documentElement.scrollTop ===
-        document.documentElement.offsetHeight
-      ) {
-        if (!fetching) {
+      const lastCard = document.querySelector(".jobCard:last-child");
+      if (lastCard) {
+        const lastCardOffset = lastCard.offsetTop + lastCard.clientHeight;
+        const pageOffset = window.pageYOffset + window.innerHeight;
+        if (pageOffset > lastCardOffset && !fetching) {
           fetchJobs();
         }
       }
@@ -109,7 +115,46 @@ export default function Home() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [fetchJobs, fetching]);
+  }, []);
+
+  useEffect(() => {
+    const filter = {
+      roles: selectedRoles,
+      numberOfEmployees: selectedNumberOfEmployees,
+      experience: selectedExperience,
+      jobType: selectedJobType,
+      minBasePaySalary: selectedMinBasePaySalary,
+      companyName: selectedCompanyName,
+    };
+    setFilter(filter);
+  }, [
+    selectedRoles,
+    selectedNumberOfEmployees,
+    selectedExperience,
+    selectedJobType,
+    selectedMinBasePaySalary,
+    selectedCompanyName,
+  ]);
+
+  useEffect(() => {
+    const lowercaseRoles = roles.map((role) => role.toLowerCase());
+    if (Object.keys(filter).length) {
+      jobs.filter((job) => {
+        if (
+          lowercaseRoles.includes(job.jobRole.toLowerCase()) &&
+          filter.numberOfEmployees.includes(job.numberOfEmployees) &&
+          filter.experience.includes(job.experience) &&
+          filter.jobType.includes(job.jobType) &&
+          filter.minBasePaySalary.includes(job.minJdSalary) &&
+          job.companyName
+            .toLowerCase()
+            .includes(filter.companyName.toLowerCase())
+        ) {
+          return job;
+        }
+      });
+    }
+  }, [filter, jobs]);
 
   return (
     <div className="container">
@@ -134,34 +179,35 @@ export default function Home() {
             style={{ flex: 1 }}
             items={experience}
             name="Experience"
-            selectedItems={selectedRoles}
-            setSelectedItems={setSelectedRoles}
+            selectedItems={selectedExperience}
+            setSelectedItems={setSelectedExperience}
           />
           <MultipleSelect
             style={{ flex: 1 }}
             items={jobType}
             name="Job Type"
-            selectedItems={selectedRoles}
-            setSelectedItems={setSelectedRoles}
+            selectedItems={selectedJobType}
+            setSelectedItems={setSelectedJobType}
           />
           <MultipleSelect
             style={{ flex: 1 }}
             items={minBasePaySalary}
             name="Min Base Pay Salary"
-            selectedItems={selectedRoles}
-            setSelectedItems={setSelectedRoles}
+            selectedItems={selectedMinBasePaySalary}
+            setSelectedItems={setSelectedMinBasePaySalary}
           />
           <TextField
             style={{ flex: 1, padding: "0 8px" }}
             id="companyName"
             label="Company Name"
             variant="outlined"
+            value={selectedCompanyName}
           />
         </div>
       </div>
       <Box className="jobCards">
         {jobs.map((job) => (
-          <JobCard key={job.jdUid} job={job} />
+          <JobCard key={job.jdUid + Math.random().toString()} job={job} />
         ))}
       </Box>
     </div>
