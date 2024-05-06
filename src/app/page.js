@@ -164,7 +164,7 @@ export default function Home() {
           (filter.experience.length !== 0 &&
             (job.minExp === null ||
               !filter.experience.some(
-                (minExp) => parseInt(job.minExp) >= minExp
+                (minExp) => parseInt(job.minExp) <= minExp
               ))) ||
           (locationsList.length !== 0 &&
             (job.location === null || !locationsList.includes(job.location))) ||
