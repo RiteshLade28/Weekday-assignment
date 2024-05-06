@@ -1,8 +1,11 @@
 # Steps to run the code
 - Clone the github repository
-- Install the requirements using `npm install`
+- Install the requirements using `npm install`. If it didn't succeed try using `npm install --force`.
 - Start the development server using `npm run dev`
 - Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+# Hosted the site on vercel
+- View hosted site on https://weekday-assignment-git-main-riteshlade28s-projects.vercel.app/
 
 # Technologies Used
 - NextJs
