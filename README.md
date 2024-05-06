@@ -1,6 +1,6 @@
 # Steps to run the code
 - Clone the github repository
-- Install the requirements
+- Install the requirements using `npm install`
 - Start the development server using `npm run dev`
 - Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
@@ -9,7 +9,9 @@
 - ReactJS
 - Material UI
 - CSS
-Note: NextJS is used in this assignment because ReactJS offcial docs recommend to use NextJS since it provides some additional functionlities. NextJS is a full-stack framework where they use ReactJS for frontend, hence though this project is develop using NextJS, it used ReactJs for frontend.
+- SCSS
+
+**Note:** NextJS is used in this assignment because ReactJS offcial docs recommend to use NextJS since it provides some additional functionlities. NextJS is a full-stack framework where they use ReactJS for frontend, hence though this project is develop using NextJS, it used ReactJs for frontend.
 
 # Folder Structure
 - Project folder contains the `src` folder where all the code lies.
