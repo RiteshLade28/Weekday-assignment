@@ -8,6 +8,7 @@ import MultipleSelect from "@/components/MultiSelectDropDown/MultiSelectDropDown
 import JobCard from "@/components/JobCard/JobCard";
 import axios from "axios";
 import Box from "@mui/material/Box";
+import JobsNotFound from "@/components/JobsNotFound/JobsNotFound";
 
 const roles = [
   "Frontend",
@@ -35,7 +36,7 @@ const numberOfEmployees = [
 
 const jobType = ["Remote", "In Office", "Hybrid"];
 
-const experience = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+const experience = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 const minBasePaySalary = [
   "0L",
@@ -62,6 +63,8 @@ export default function Home() {
   const [offset, setOffset] = useState(0);
   const [fetching, setFetching] = useState(false);
   const [filter, setFilter] = useState({});
+  const [filteredJobs, setFilteredJobs] = useState([]);
+  const [jobsFound, setJobsFound] = useState(true);
 
   const fetchJobs = useCallback(() => {
     setFetching(true);
@@ -86,8 +89,10 @@ export default function Home() {
       .then((response) => {
         console.log(response);
         setJobs((prevJobs) => [...prevJobs, ...response.data.jdList]);
+        setFilteredJobs((prevJobs) => [...prevJobs, ...response.data.jdList]);
         setOffset((offset) => offset + 10);
         setFetching(false);
+        setJobsFound(true);
       })
       .catch((error) => {
         console.error("Error fetching jobs:", error);
@@ -137,22 +142,59 @@ export default function Home() {
   ]);
 
   useEffect(() => {
-    const lowercaseRoles = roles.map((role) => role.toLowerCase());
     if (Object.keys(filter).length) {
-      jobs.filter((job) => {
+      // Filter jobs on the frontend side
+      const lowerCaseRoles = filter.roles.map((role) => role.toLowerCase());
+      const minSalaryInNumbers = filter.minBasePaySalary.map((salary) =>
+        parseInt(salary)
+      );
+      const locationsList = filter.jobType.map((location) =>
+        location.toLowerCase()
+      );
+
+      const filteredJobsList = jobs.filter((job) => {
+        const jobSalary = parseInt(job.minJdSalary);
+
         if (
-          lowercaseRoles.includes(job.jobRole.toLowerCase()) &&
-          filter.numberOfEmployees.includes(job.numberOfEmployees) &&
-          filter.experience.includes(job.experience) &&
-          filter.jobType.includes(job.jobType) &&
-          filter.minBasePaySalary.includes(job.minJdSalary) &&
-          job.companyName
-            .toLowerCase()
-            .includes(filter.companyName.toLowerCase())
+          (lowerCaseRoles.length !== 0 &&
+            !lowerCaseRoles.includes(job.jobRole.toLowerCase())) ||
+          (filter.numberOfEmployees.length !== 0 &&
+            (job.numberOfEmployees === null ||
+              !filter.numberOfEmployees.includes(job.numberOfEmployees))) ||
+          (filter.experience.length !== 0 &&
+            (job.minExp === null ||
+              !filter.experience.some(
+                (minExp) => parseInt(job.minExp) >= minExp
+              ))) ||
+          (locationsList.length !== 0 &&
+            (job.location === null || !locationsList.includes(job.location))) ||
+          (minSalaryInNumbers.length !== 0 &&
+            (job.minJdSalary === null ||
+              !minSalaryInNumbers.some(
+                (filterSalary) => jobSalary > filterSalary
+              ))) ||
+          (filter.companyName &&
+            (job.companyName === null ||
+              !job.companyName
+                .toLowerCase()
+                .includes(filter.companyName.toLowerCase())))
         ) {
-          return job;
+          return false;
         }
+
+        return true;
       });
+
+      if (filteredJobsList.length === 0) {
+        console.log("No jobs found");
+        setJobsFound(false);
+        setFilteredJobs([]);
+      } else {
+        setJobsFound(true);
+        setFilteredJobs(filteredJobsList);
+      }
+
+      console.log(filteredJobsList);
     }
   }, [filter, jobs]);
 
@@ -197,19 +239,24 @@ export default function Home() {
             setSelectedItems={setSelectedMinBasePaySalary}
           />
           <TextField
-            style={{ flex: 1, padding: "0 8px" }}
+            style={{ flex: 1, padding: "0px 8px" }}
             id="companyName"
             label="Company Name"
             variant="outlined"
             value={selectedCompanyName}
+            onChange={(e) => setSelectedCompanyName(e.target.value)}
           />
         </div>
       </div>
-      <Box className="jobCards">
-        {jobs.map((job) => (
-          <JobCard key={job.jdUid + Math.random().toString()} job={job} />
-        ))}
-      </Box>
+      {jobsFound ? (
+        <Box className="jobCards">
+          {filteredJobs.map((job) => (
+            <JobCard key={job.jdUid + Math.random().toString()} job={job} />
+          ))}
+        </Box>
+      ) : (
+        <JobsNotFound />
+      )}
     </div>
   );
 }
